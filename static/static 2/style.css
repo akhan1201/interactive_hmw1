@@ -1,0 +1,90 @@
+/* General Page Styling */
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.page-title {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 28px;
+    color: #2c3e50;
+}
+
+.page-subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 30px;
+}
+
+/* Section Wrappers */
+#map-section, 
+#bar-chart-section,
+#donut-chart-section {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto 40px auto;
+    padding: 0 20px;
+}
+
+.section-title {
+    font-size: 20px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #2c3e50;
+    text-align: center;
+}
+
+.section-caption {
+    font-size: 14px;
+    color: #7f8c8d;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Container for the visuals */
+#map-container, 
+#bar-chart-container,
+#species-chart-container {
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 90%;
+    max-width: 800px;
+    height: auto; 
+    overflow: hidden; 
+}
+
+/* For bar chart axes/text styling */
+.axis path,
+.axis line {
+    stroke: #ccc;
+}
+.axis text {
+    font-size: 12px;
+}
+
+/* Legend styling for map's SVG */
+#legend text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+@media (max-width: 600px) {
+    .page-title {
+      font-size: 24px;
+    }
+    .section-title {
+      font-size: 18px;
+    }
+    #map-container, #bar-chart-container, #species-chart-container {
+      width: 95%;
+    }
+
+}

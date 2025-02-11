@@ -1,0 +1,7 @@
+#EASIEST way to install all requirements at once. Write below, then save, then run 
+#pip install -r requirements.txt in command line to automatically download all at once
+
+
+flask
+gunicorn
+whitenoise

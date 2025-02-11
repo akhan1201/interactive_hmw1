@@ -1,0 +1,163 @@
+// Define SVG dimensions
+const width = 600, height = 800;
+
+// Create SVG canvas
+const svg = d3.select("#map-container")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+// Load Neighborhood Data
+d3.json("static/SF-Neighborhoods.geo.json").then(topoData => {
+    const geoData = topojson.feature(topoData, topoData.objects.SFNeighborhoods);
+    const projection = d3.geoMercator().fitSize([width, height], geoData);
+    const path = d3.geoPath().projection(projection);
+
+    // Draw neighborhoods
+    svg.selectAll("path")
+        .data(geoData.features)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("fill", "#ddd")
+        .attr("stroke", "#666")
+        .attr("stroke-width", 1.5);
+
+    // Load Tree Data
+    d3.csv("static/Street_Tree_List-2022-01-30_FILTERED.csv").then(treeData => {
+        // Filter trees by DBH > 20
+        const largeDBHTrees = treeData.filter(d => +d.DBH > 20);
+
+
+    // Define landmarks for reference (replace or extend this list as needed)
+    const landmarks = [
+        { name: "Golden Gate Park", lat: 37.7694, lon: -122.4862 },
+        { name: "Twin Peaks", lat: 37.7544, lon: -122.4477 },
+        { name: "Presidio National Park", lat: 37.7989, lon: -122.4662 },
+        { name: "Alamo Square", lat: 37.7764, lon: -122.4346 },
+        { name: "Union Square", lat: 37.7880, lon: -122.4075 }
+    ];
+
+
+    // Filter and group large DBH trees by proximity
+    d3.csv("static/Street_Tree_List-2022-01-30_FILTERED.csv").then(treeData => {
+        const largeDBHTrees = treeData.filter(d => +d.DBH > 20);
+
+        // Project tree coordinates to the map
+        const projectedPoints = largeDBHTrees.map(d => ({
+            x: projection([+d.Longitude, +d.Latitude])[0],
+            y: projection([+d.Longitude, +d.Latitude])[1],
+            lon: +d.Longitude,
+            lat: +d.Latitude,
+            DBH: +d.DBH
+        }));
+
+
+    // Cluster trees by proximity (manual grouping)
+    const clusterRadius = 20; // Radius in pixels for grouping
+    const clusters = [];
+
+    projectedPoints.forEach(point => {
+        let addedToCluster = false;
+
+        for (const cluster of clusters) {
+            const dx = point.x - cluster.x;
+            const dy = point.y - cluster.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < clusterRadius) {
+                // Add point to existing cluster
+                cluster.points.push(point);
+                cluster.x = d3.mean(cluster.points, p => p.x);
+                cluster.y = d3.mean(cluster.points, p => p.y);
+                cluster.lon = d3.mean(cluster.points, p => p.lon);
+                cluster.lat = d3.mean(cluster.points, p => p.lat);
+                addedToCluster = true;
+                break;
+            }
+        }
+
+        if (!addedToCluster) {
+            // Create a new cluster
+            clusters.push({
+                x: point.x,
+                y: point.y,
+                lon: point.lon,
+                lat: point.lat,
+                points: [point]
+            });
+        }
+    });
+
+    // Sort clusters by number of points (tree density) and pick the top 5
+    const topClusters = clusters
+        .sort((a, b) => b.points.length - a.points.length)
+        .slice(0, 7);
+
+    // Match clusters to the closest landmarks
+    topClusters.forEach(cluster => {
+        const distances = landmarks.map(landmark => {
+            const dx = cluster.lon - landmark.lon;
+            const dy = cluster.lat - landmark.lat;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return { ...landmark, distance };
+        });
+
+        const closestLandmark = distances.sort((a, b) => a.distance - b.distance)[0];
+        cluster.closestLandmark = closestLandmark;
+    });
+
+    // Draw top clusters with black dots
+    svg.selectAll("circle.cluster")
+        .data(topClusters)
+        .enter()
+        .append("circle")
+        .attr("class", "cluster")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 10) // Larger size for cluster centers
+        .attr("fill", "black")
+        .attr("opacity", 0.8);
+
+    // Label the clusters with the closest landmark
+    svg.selectAll("text.cluster-label")
+        .data(topClusters)
+        .enter()
+        .append("text")
+        .attr("class", "cluster-label")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - 12) // Position above the cluster dot
+        .attr("text-anchor", "middle")
+        .attr("font-size", "12px")
+        .attr("fill", "blue")
+        .text(d => `${d.closestLandmark.name} (${d.points.length} trees)`);
+});
+
+
+
+
+
+
+
+
+
+        // Plot large DBH trees
+        svg.selectAll("circle")
+            .data(largeDBHTrees)
+            .enter()
+            .append("circle")
+            .attr("cx", d => projection([+d.Longitude, +d.Latitude])[0])
+            .attr("cy", d => projection([+d.Longitude, +d.Latitude])[1])
+            .attr("r", 4)
+            .attr("fill", "red")
+            .attr("opacity", 0.6);
+
+        // Neighborhood Highlight
+        const neighborhoodDensity = d3.rollups(
+            largeDBHTrees,
+            v => v.length, // Count trees
+            d => d.qAddress?.split(", ")[1] // Neighborhood name
+        );
+        
+       });
+});

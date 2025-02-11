@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>San Francisco Large Tree Distribution</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/topojson-client@3"></script>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <h1 class="page-title">San Francisco's Large Trees (DBH > 20)</h1>
+    <p class="page-subtitle">
+      This visualization examines the distribution and maintenance of San Francisco’s largest street trees. 
+    </p>
+
+    <!-- MAP -->
+    <div id="map-section">
+        <h2 class="section-title">Distribution of Large Trees by Species</h2>
+        <p class="section-caption">
+          The map shows the geographic distribution of large-diameter trees (DBH > 20) by species. 
+          The top five species are highlighted with distinct colors, while all others are grouped under "Other."
+        </p>
+        <div id="map-container"></div>
+    </div>
+
+    <!-- BAR CHART -->
+    <div id="bar-chart-section">
+        <h2 class="section-title">Tree Maintenance by Location and Caretaker</h2>
+        <p class="section-caption">
+          This chart compares tree maintenance responsibilities for trees near neighborhood borders versus those deeper inside. 
+          The bars represent the number of large trees managed by private caretakers, DPW, or other entities.
+        </p>
+        <div id="bar-chart-container"></div>
+    </div>        
+  
+    <script src="static/script.js"></script>
+</body>
+</html>
